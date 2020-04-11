@@ -4,6 +4,13 @@ Collaborative repository with the purpose of showing a map with the status of CO
 
 Teacher: Prof. Luis Bermudez 
 
+
+# Process
+
+1. Load data in PostGIS
+2. Publish in GeoServer
+3. Use a client to view the data
+
 Project Details:
 
 Coronavirus mapping...
