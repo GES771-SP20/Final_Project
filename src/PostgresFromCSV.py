@@ -65,7 +65,7 @@ def addColumns(df2):
         # Use column operations to populate PopDensity, PopChg, and PctPopChg fields
         df2['InfectRate'] = df2['positive'] / df2['totalTestResults']
         df2['HospRate'] = df2['hospitalizedCumulative'] / df2['positive']
-        df2['DeathRate'] = df2['death'] - df2['positive']
+        df2['DeathRate'] = df2['death'] / df2['positive']
 
         print("Process status: Additional columns inserted and populated in dataframe {}.\n".format(df2.shape))
         print("Dataframe first 10 rows:\n\n{}\n".format(df2.head(10)))
