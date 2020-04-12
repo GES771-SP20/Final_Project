@@ -15,7 +15,7 @@ This program uses the pandas and psycopg2 libraries to:
 import pandas as pd
 import numpy as np
 import sys
-import StringIO
+import StringIO as sio
 import psycopg2 as pg
 
 ##### LOCAL FUNCTIONS ####################
@@ -90,19 +90,24 @@ def copyToPostgres(df, connectParams, tableName):
     
     try:
         
-        con = pg.connect(connectParams) # establish database connection
+        conn = pg.connect(connectParams) # establish database connection
         print ("Connection to database established.")
         
-        buf = StringIO.StringIO() # create text buffer
+        buf = sio.StringIO() # create text buffer
         df.to_csv(buf) # write dataframe to buffer
         buf.seek(0) # reset buffer position to beginning
         print("Data read into text buffer")      
         
-        with con: # with statement provides error handling and closes connection at end of code block
-            cur = con.cursor()
+        with conn.cursor() as cur: # with statement provides error handling and closes cursor at end of code block
+            cur.execute("truncate " + tableName + ";") # clear out all existing data from db table
             cur.copy_from(buf, tableName, sep=',') # copy from buffer to postgres table
-            con.commit()
+            #sqlStatement = """COPY %s FROM STDIN WITH CSV HEADER DELIMITER AS ','"""
+            #cur.copy_expert(sql=sqlStatement % tableName, file=buf) # Alternative to copy_from method
+            conn.commit()
             
+            fout = open('pgCopyConfirmation.csv', 'w')
+            cur.copy_to(fout, tableName, sep=",") # to confirm data loaded to the db table
+                        
         print("Process status: Postgres table {} updated {}.\n".format(tableName, df.shape))
         
     except:
@@ -110,10 +115,11 @@ def copyToPostgres(df, connectParams, tableName):
         raise
 
     finally:
-        if buf:
-            buf.close()
+        fout.close()
+        buf.close()
+        cur.close() # redundant?
+        conn.close()
 
-   
 ##### EXECUTE PROGRAM ###############################
 
 # Assign variables
@@ -124,7 +130,7 @@ colsRename = {'totalTestResults':'totalTests', 'death':'deaths'} # key is source
 # key is column name for calculated rate; value is tuple of numerator and denominator columns
 ratesToCalc = {'infectRate':('positive','totalTests'), 'hospRate':('hospitalized', 'positive'), 'deathRate':('deaths', 'positive')} 
 
-connString = 'host=localhost dbname=postgres user=postgres password=tazz5113'
+connString = 'host=localhost dbname=postgres user=postgres password=provide_password_if_needed'
 dbTableName = 'TBD' # include schema.table
 
 # Call local functions
