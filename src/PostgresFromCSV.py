@@ -5,27 +5,25 @@ authors: Scott Clement, Luis Resh
 GES771: Advanced Spatial Data Management
 
 This program uses the pandas and psycopg2 libraries to: 
-1. Read a csv file from an api url into a dataframe
-2. Filter out unneeded columns, reorder columns, handle null values, other data cleanup
-3. Populate additional fields with values derived from the original imported values
+1. Read select columns in a csv file from an api url into a dataframe
+2. Reorder and rename columns, handle null values, other data cleanup
+3. Populate additional columns with values derived from the original imported values
 4. Copy processed data to a postgres database table
 '''
 
 ##### IMPORTS ###########################
 import pandas as pd
 import numpy as np
-import psycopg2
 import sys
-# import geopandas as gp
-# import json
-# import csv
+import StringIO
+import psycopg2 as pg
 
 ##### LOCAL FUNCTIONS ####################
 ''' 
 loadDataframe() function
-Purpose: Read in specific data columns from a source, re-order and rename the columns
-Required parameters: filepath, delimiter, column order list, rename dictionary
-Returns: Single dataframe with processed data
+Purpose: Read in specific data columns from a file source, re-order and rename the columns, replace NaN values
+Required parameters: filepath, delimiter, column order list, rename dictionary, replacement value for NaNs
+Returns: Dataframe with processed data
 '''
 def loadDataframe(fpath, cols=[], delim=',', rename={}, nanValue=np.NaN):
     
@@ -54,9 +52,9 @@ def loadDataframe(fpath, cols=[], delim=',', rename={}, nanValue=np.NaN):
         raise
 
 '''
-addCols() function
-Purpose: Add and populate new fields... infectRate, hospRate, deathRate
-Required parameter: Dataframe with original loaded data
+addRateCols() function
+Purpose: Add and populate new rate columns
+Required parameter: Dataframe with processed data, dictionary of rates to be calculated and added as columns
 Returns: Dataframe with additional columns populated
 '''
 def addRateCols(df, ratesDict):
@@ -81,28 +79,41 @@ def addRateCols(df, ratesDict):
         raise
 
 '''
-exportToPostgres() function
-Purpose: export dataframe to postgres database
-Required parameter: Dataframe with loaded data
-Returns: Dataframe with additional columns populated
+copyToPostgres() function
+Purpose: Copy data in dataframe to postgres database table
+Required parameters: Dataframe with processed data, db connection string, db table name
+Returns: n/a
 '''
-def exportToPostgres(df, connString, tableName):
+def copyToPostgres(df, connectParams, tableName):
+    
+    print("Connecting to database " + connectParams + " table " + tableName + "...")
     
     try:
-        #establish database connection and cursor
-        conn = psycopg2.connect(connString) # change to actual database connection string
-        cur = conn.cursor()
         
-        # export datatable to postgres
-        cur.copy_from(df, 'tablename', sep=',')
-        conn.commit()
+        con = pg.connect(connectParams) # establish database connection
+        print ("Connection to database established.")
         
-        print("Process status: Postgres table updated {}.\n".format(df3.shape))
+        buf = StringIO.StringIO() # create text buffer
+        df.to_csv(buf) # write dataframe to buffer
+        buf.seek(0) # reset buffer position to beginning
+        print("Data read into text buffer")      
+        
+        with con: # with statement provides error handling and closes connection at end of code block
+            cur = con.cursor()
+            cur.copy_from(buf, tableName, sep=',') # copy from buffer to postgres table
+            con.commit()
+            
+        print("Process status: Postgres table {} updated {}.\n".format(tableName, df.shape))
         
     except:
-        print("Error in exportToPostgres() function: {}\n".format(sys.exc_info()))
+        print("Error in copyToPostgres() function: {}\n".format(sys.exc_info()))
         raise
 
+    finally:
+        if buf:
+            buf.close()
+
+   
 ##### EXECUTE PROGRAM ###############################
 
 # Assign variables
@@ -113,14 +124,14 @@ colsRename = {'totalTestResults':'totalTests', 'death':'deaths'} # key is source
 # key is column name for calculated rate; value is tuple of numerator and denominator columns
 ratesToCalc = {'infectRate':('positive','totalTests'), 'hospRate':('hospitalized', 'positive'), 'deathRate':('deaths', 'positive')} 
 
-connString = 'host=localhost dbname=postgres user=postgres'
-dbTableName = 'TBD'
+connString = 'host=localhost dbname=postgres user=postgres password=tazz5113'
+dbTableName = 'TBD' # include schema.table
 
 # Call local functions
 try:
     data = loadDataframe(url, delim=',', cols=colsIn, rename=colsRename, nanValue=0) # returns "cleaned" dataframe with data imported from api
     data = addRateCols(data, ratesToCalc) # returns dataframe with additional populated rate columns
-   # exportToPostgres(data, connString, dbTableName) # updates postgres table with processed data from dataframe
+    copyToPostgres(data, connString, dbTableName) # updates postgres table with processed data from dataframe
         
 except:
     print("Program terminated prior to completion.")
@@ -130,6 +141,7 @@ print("Program completed.")
 
 ##### END OF PROGRAM #################################
 
+##### CODE SAMPLES ###################################
 '''
 # export datatable to postgres
 conn = psycopg2.connect("host=localhost dbname=postgres user=postgres")
@@ -139,6 +151,7 @@ with open('filename.csv', 'r') as f:
     cur.copy_from(f, 'users', sep=',')
 conn.commit()
 '''
+
 ''' Alternative to wholesale copy
 with open('filename.csv', 'r') as f:
     reader = csv.reader(f)
