@@ -25,7 +25,7 @@ Purpose: Read in specific data columns from a file source, re-order and rename t
 Required parameters: filepath, delimiter, column order list, rename dictionary, replacement value for NaNs
 Returns: Dataframe with processed data
 '''
-def loadDataframe(fpath, cols=[], delim=',', rename={}, nanValue=np.NaN):
+def loadDataframe(fpath, cols=[], delim=',', types={}, rename={}, nanValue=np.NaN):
     
     try:
         
@@ -40,11 +40,18 @@ def loadDataframe(fpath, cols=[], delim=',', rename={}, nanValue=np.NaN):
             print("Unable to read data from {}".format(url))
             raise
         
-        df.rename(columns=rename, inplace=True) # rename columns
         df.fillna(nanValue, inplace=True) # replace NaN with zeros
-                 
+        
+        for key in types:        
+            df[key] = df[key].astype(types[key]) # convert to data types given in the types dictionary parameter
+        
+        #df['date'] = pd.to_datetime(df['date'])
+        
+        df.rename(columns=rename, inplace=True) # rename columns
+        
         print("Process status: Dataframe {} loaded from api.\n".format(df.shape))
         print("Dataframe first 10 rows:\n\n{}\n".format(df.head(10)))
+        print("Data Types:\n{}".format(df.dtypes))
         return df
     
     except:
@@ -72,6 +79,7 @@ def addRateCols(df, ratesDict):
         
         print("Process status: Rate columns inserted and populated in dataframe {}.\n".format(df.shape))
         print("Dataframe first 10 rows:\n\n{}\n".format(df.head(10)))
+        #print("Dataframe first 10 rows:\n\n{}\n".format(df))
         return df
     
     except:
@@ -100,9 +108,9 @@ def copyToPostgres(df, connectParams, tableName):
         
         with conn.cursor() as cur: # with statement provides error handling and closes cursor at end of code block
             cur.execute("truncate " + tableName + ";") # clear out all existing data from db table
-            cur.copy_from(buf, tableName, sep=',') # copy from buffer to postgres table
-            #sqlStatement = """COPY %s FROM STDIN WITH CSV HEADER DELIMITER AS ','"""
-            #cur.copy_expert(sql=sqlStatement % tableName, file=buf) # Alternative to copy_from method
+            #cur.copy_from(buf, tableName, sep=',') # copy from buffer to postgres table
+            sqlStatement = """COPY %s FROM STDIN WITH CSV HEADER DELIMITER AS ','"""
+            cur.copy_expert(sql=sqlStatement % tableName, file=buf) # Alternative to copy_from method
             conn.commit()
             
             fout = open('pgCopyConfirmation.csv', 'w')
@@ -125,17 +133,18 @@ def copyToPostgres(df, connectParams, tableName):
 # Assign variables
 url ='https://covidtracking.com/api/v1/states/daily.csv'
 colsIn = ['date', 'state', 'fips', 'positive', 'negative', 'totalTestResults', 'hospitalized', 'death'] # List source column names in desired order for dataframe
-colsRename = {'totalTestResults':'totalTests', 'death':'deaths'} # key is source column name, value is new column name for dataframe
+typeConvert = {'date':'str', 'state':'str', 'fips':'str', 'positive':'int', 'negative':'int', 'totalTestResults':'int', 'hospitalized':'int', 'death':'int' }
+colsRename = {'date':'txtDate', 'totalTestResults':'totalTests', 'death':'deaths'} # key is source column name, value is new column name for dataframe
 
 # key is column name for calculated rate; value is tuple of numerator and denominator columns
 ratesToCalc = {'infectRate':('positive','totalTests'), 'hospRate':('hospitalized', 'positive'), 'deathRate':('deaths', 'positive')} 
 
-connString = 'host=localhost dbname=postgres user=postgres password=provide_password_if_needed'
-dbTableName = 'TBD' # include schema.table
+connString = 'host=localhost dbname=GES771 user=postgres password=tazz5113'
+dbTableName = 'public.covid19_stats' # include schema.table
 
 # Call local functions
 try:
-    data = loadDataframe(url, delim=',', cols=colsIn, rename=colsRename, nanValue=0) # returns "cleaned" dataframe with data imported from api
+    data = loadDataframe(url, delim=',', cols=colsIn, types=typeConvert, rename=colsRename, nanValue=0) # returns "cleaned" dataframe with data imported from api
     data = addRateCols(data, ratesToCalc) # returns dataframe with additional populated rate columns
     copyToPostgres(data, connString, dbTableName) # updates postgres table with processed data from dataframe
         
