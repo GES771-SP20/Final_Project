@@ -5,7 +5,7 @@
 CREATE TABLE public.covid19_stats
 (
     id integer NOT NULL,
-    txt_date text COLLATE pg_catalog."default",
+    ymd_date date,
     state text COLLATE pg_catalog."default",
     fips text COLLATE pg_catalog."default",
     positive integer,
