@@ -6,7 +6,7 @@ GES771: Advanced Spatial Data Management
 
 This program uses the pandas and psycopg2 libraries to: 
 1. Read select columns in a csv file from an api url into a dataframe
-2. Reorder and rename columns, handle null values, other data cleanup
+2. Clean the data -- i.e., reorder and rename columns, convert data types, handle null values
 3. Populate additional columns with values derived from the original imported values
 4. Copy processed data to a postgres database table
 '''
@@ -14,6 +14,7 @@ This program uses the pandas and psycopg2 libraries to:
 ##### IMPORTS ###########################
 import pandas as pd
 import numpy as np
+from datetime import date
 import sys
 import StringIO as sio
 import psycopg2 as pg
@@ -21,48 +22,68 @@ import psycopg2 as pg
 ##### LOCAL FUNCTIONS ####################
 ''' 
 loadDataframe() function
-Purpose: Read in specific data columns from a file source, re-order and rename the columns, replace NaN values
-Required parameters: filepath, delimiter, column order list, rename dictionary, replacement value for NaNs
-Returns: Dataframe with processed data
+Purpose: Read in specific data columns from a file source, re-order the columns
+Required parameters: filepath, delimiter, column order list
+Returns: Dataframe with "raw" data from source
 '''
-def loadDataframe(fpath, cols=[], delim=',', types={}, rename={}, nanValue=np.NaN):
+def loadDataframe(fpath, delim=',', cols=[]):
     
     try:
+        if cols:
+            df = pd.read_csv(fpath, sep=delim, usecols=cols)[cols] # Read specified column data (in list order) from file into dataframe.
+        else:
+            df = pd.read_csv(fpath, sep=delim) # Read in all columns from file
+            
+        print("Process status: CSV data read into dataframe {} from {}.\n".format(df.shape, url))        
+        print("Raw data sample:\n\n{}\n".format(df.head(10)))
+        print("Data Types:\n{}\n".format(df.dtypes))
         
-        try:
-            if cols:
-                df = pd.read_csv(fpath, sep=delim, usecols=cols)[cols] # Read specified column data (in list order) from file into dataframe.
-            else:
-                df = pd.read_csv(fpath, sep=delim) # Read in all columns from file
-            print("CSV data read from url {}.".format(url))
-    
-        except:
-            print("Unable to read data from {}".format(url))
-            raise
-        
-        df.fillna(nanValue, inplace=True) # replace NaN with zeros
-        
-        for key in types:        
-            df[key] = df[key].astype(types[key]) # convert to data types given in the types dictionary parameter
-        
-        #df['date'] = pd.to_datetime(df['date'])
-        
-        df.rename(columns=rename, inplace=True) # rename columns
-        
-        print("Process status: Dataframe {} loaded from api.\n".format(df.shape))
-        print("Dataframe first 10 rows:\n\n{}\n".format(df.head(10)))
-        print("Data Types:\n{}".format(df.dtypes))
         return df
     
     except:
         print("Error in loadDataframe() function: {}\n".format(sys.exc_info()))
+        print("Unable to read data from {}".format(url))
         raise
 
+''' 
+cleanDataframe() function
+Purpose: Convert data types, rename the columns, replace NaN values
+Required parameters: data types dictionary, column rename dictionary, replacement value for NaNs
+Returns: Dataframe with processed data
+'''
+def cleanDataframe(df, types={}, rename={}, nanValue=np.NaN):
+    
+    try:        
+        df.fillna(nanValue, inplace=True) # replace NaN with zeros
+        
+        for key in types:
+            
+            if types[key] == 'date':
+                df[key] = df[key].astype(str)
+                df[key] = pd.to_datetime(df[key],format='%Y%m%d') # format date
+                
+            else:        
+                df[key] = df[key].astype(types[key]) # convert to data types given in the types dictionary parameter
+        
+        df.rename(columns=rename, inplace=True) # rename columns
+        
+        df.index = df.index + 1 # row index starts at 1 rather than 0
+        
+        print("Process status: Dataframe {} typed and cleaned.\n".format(df.shape))
+        print("Clean data sample:\n\n{}\n".format(df.head(10)))
+        print("Data Types:\n{}\n".format(df.dtypes))
+        
+        return df
+    
+    except:
+        print("Error in cleanDataframe() function: {}\n".format(sys.exc_info()))
+        raise
+    
 '''
 addRateCols() function
 Purpose: Add and populate new rate columns
 Required parameter: Dataframe with processed data, dictionary of rates to be calculated and added as columns
-Returns: Dataframe with additional columns populated
+Returns: Dataframe with new rate columns populated
 '''
 def addRateCols(df, ratesDict):
     
@@ -78,8 +99,8 @@ def addRateCols(df, ratesDict):
         df.replace(to_replace = [np.nan, np.inf], value = 0, inplace=True) # replace possible divide-by-zero results with zero
         
         print("Process status: Rate columns inserted and populated in dataframe {}.\n".format(df.shape))
-        print("Dataframe first 10 rows:\n\n{}\n".format(df.head(10)))
-        #print("Dataframe first 10 rows:\n\n{}\n".format(df))
+        print("Data sample with rates:\n\n{}\n".format(df.head(10)))
+
         return df
     
     except:
@@ -94,6 +115,7 @@ Returns: n/a
 '''
 def copyToPostgres(df, connectParams, tableName):
     
+    print("Process status:")
     print("Connecting to database " + connectParams + " table " + tableName + "...")
     
     try:
@@ -103,8 +125,7 @@ def copyToPostgres(df, connectParams, tableName):
         
         buf = sio.StringIO() # create text buffer
         df.to_csv(buf) # write dataframe to buffer
-        buf.seek(0) # reset buffer position to beginning
-        print("Data read into text buffer")      
+        buf.seek(0) # reset buffer position to beginning    
         
         with conn.cursor() as cur: # with statement provides error handling and closes cursor at end of code block
             cur.execute("truncate " + tableName + ";") # clear out all existing data from db table
@@ -116,7 +137,7 @@ def copyToPostgres(df, connectParams, tableName):
             fout = open('pgCopyConfirmation.csv', 'w')
             cur.copy_to(fout, tableName, sep=",") # to confirm data loaded to the db table
                         
-        print("Process status: Postgres table {} updated {}.\n".format(tableName, df.shape))
+        print("Postgres table {} updated {}.\n".format(tableName, df.shape))
         
     except:
         print("Error in copyToPostgres() function: {}\n".format(sys.exc_info()))
@@ -133,18 +154,20 @@ def copyToPostgres(df, connectParams, tableName):
 # Assign variables
 url ='https://covidtracking.com/api/v1/states/daily.csv'
 colsIn = ['date', 'state', 'fips', 'positive', 'negative', 'totalTestResults', 'hospitalized', 'death'] # List source column names in desired order for dataframe
-typeConvert = {'date':'str', 'state':'str', 'fips':'str', 'positive':'int', 'negative':'int', 'totalTestResults':'int', 'hospitalized':'int', 'death':'int' }
-colsRename = {'date':'txtDate', 'totalTestResults':'totalTests', 'death':'deaths'} # key is source column name, value is new column name for dataframe
+
+typeConvert = {'date':'date', 'state':'str', 'fips':'str', 'positive':'int', 'negative':'int', 'totalTestResults':'int', 'hospitalized':'int', 'death':'int' }
+colsRename = {'date':'ymd_date', 'totalTestResults':'total_tests', 'death':'deaths'} # key is source column name, value is new column name for dataframe
 
 # key is column name for calculated rate; value is tuple of numerator and denominator columns
-ratesToCalc = {'infectRate':('positive','totalTests'), 'hospRate':('hospitalized', 'positive'), 'deathRate':('deaths', 'positive')} 
+ratesToCalc = {'infect_rate':('positive','total_tests'), 'hosp_rate':('hospitalized', 'positive'), 'death_rate':('deaths', 'positive')} 
 
 connString = 'host=localhost dbname=GES771 user=postgres password=tazz5113'
 dbTableName = 'public.covid19_stats' # include schema.table
 
 # Call local functions
 try:
-    data = loadDataframe(url, delim=',', cols=colsIn, types=typeConvert, rename=colsRename, nanValue=0) # returns "cleaned" dataframe with data imported from api
+    data = loadDataframe(url, delim=',', cols=colsIn) # returns dataframe with "raw" data imported from csv file on api
+    data = cleanDataframe(data, types=typeConvert, rename=colsRename, nanValue=0) # returns "clean" dataframe
     data = addRateCols(data, ratesToCalc) # returns dataframe with additional populated rate columns
     copyToPostgres(data, connString, dbTableName) # updates postgres table with processed data from dataframe
         
@@ -208,4 +231,13 @@ def reorderCols(df, movecols=[], refcol='', place='after'):
     except:
         print("Error in reorderCols() function: {}\n".format(sys.exc_info()))
         raise
-'''    
+''' 
+'''
+    year = df[key].str.slice(start=0, stop=4)
+    month = df[key].str.slice(start=4, stop=6)
+    day = df[key].str.slice(start=6)
+'''
+
+
+
+   
