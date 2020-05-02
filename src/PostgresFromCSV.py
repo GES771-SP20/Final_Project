@@ -82,20 +82,20 @@ def cleanDataframe(df, types={}, rename={}, nanValue=np.NaN):
 '''
 addRateCols() function
 Purpose: Add and populate new rate columns
-Required parameter: Dataframe with processed data, dictionary of rates to be calculated and added as columns
+Required parameter: Dataframe with processed data, list of rates to be calculated and added as columns
 Returns: Dataframe with new rate columns populated
 '''
-def addRateCols(df, ratesDict):
+def addRateCols(df, ratesList):
     
     try: 
         # Use column operations to create and populate rate columns defined in ratesDict
         
-        for key in ratesDict:
-            numdenom = ratesDict.get(key)
-            num = numdenom[0]
-            denom = numdenom[1]
-            df[key] = df[num] / df[denom]
-
+        for rate in ratesList:
+            rateName = rate[0]
+            num = rate[1]
+            denom = rate[2]
+            df[rateName] = df[num] / df[denom]
+                  
         df.replace(to_replace = [np.nan, np.inf], value = 0, inplace=True) # replace possible divide-by-zero results with zero
         
         print("Process status: Rate columns inserted and populated in dataframe {}.\n".format(df.shape))
@@ -158,8 +158,8 @@ colsIn = ['date', 'state', 'fips', 'positive', 'negative', 'totalTestResults', '
 typeConvert = {'date':'date', 'state':'str', 'fips':'str', 'positive':'int', 'negative':'int', 'totalTestResults':'int', 'hospitalized':'int', 'death':'int' }
 colsRename = {'date':'ymd_date', 'totalTestResults':'total_tests', 'death':'deaths'} # key is source column name, value is new column name for dataframe
 
-# key is column name for calculated rate; value is tuple of numerator and denominator columns
-ratesToCalc = {'infect_rate':('positive','total_tests'), 'hosp_rate':('hospitalized', 'positive'), 'death_rate':('deaths', 'positive')} 
+# Provide list of tuples with values: (column name for new calculated rate, numerator column name, denominator column name)
+ratesToCalc = [('infect_rate', 'positive', 'total_tests'), ('hosp_rate', 'hospitalized', 'positive'), ('death_rate', 'deaths', 'positive')] 
 
 connString = 'host=localhost dbname=GES771 user=postgres password=tazz5113'
 dbTableName = 'public.covid19_stats' # include schema.table
