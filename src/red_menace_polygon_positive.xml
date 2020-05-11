@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<StyledLayerDescriptor version="1.0.0" 
+ xsi:schemaLocation="http://www.opengis.net/sld StyledLayerDescriptor.xsd" 
+ xmlns="http://www.opengis.net/sld"
+ xmlns:ogc="http://www.opengis.net/ogc" 
+ xmlns:xlink="http://www.w3.org/1999/xlink" 
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  
+  <NamedLayer>
+    <Name>covid19_states</Name>
+    
+    <UserStyle>
+      <Name>red_menace_polygon_positive</Name>
+      <Title>Red Menace Polygons - positive</Title>
+      <Abstract>Draws polygons in varying intensities of red for 'positive' attribute</Abstract>
+
+      <FeatureTypeStyle>
+        
+        <Rule>
+          <Name>Infections</Name>
+          <Title>Infection Count (Positive Test Results)</Title>
+          <Abstract>Abstract goes here</Abstract>
+
+          <PolygonSymbolizer>
+
+            <Fill>
+              <CssParameter name="fill">
+                <ogc:Function name="Interpolate">
+
+                  <!-- Property to transform -->
+                  <ogc:PropertyName>positive</ogc:PropertyName>
+
+                  <!-- Mapping curve definition pairs (input, output) -->
+                  <ogc:Literal>0</ogc:Literal>
+                  <ogc:Literal>#ffe6e6</ogc:Literal>
+
+                  <ogc:Literal>308314</ogc:Literal>
+                  <ogc:Literal>#ff0000</ogc:Literal>
+
+                  <!-- Interpolation method -->
+                  <ogc:Literal>color</ogc:Literal>
+
+                  <!-- Interpolation mode - defaults to linear; other options: cubic, cosine -->
+                  <ogc:Literal>linear</ogc:Literal>
+                  
+                </ogc:Function>
+              </CssParameter>
+            </Fill>
+
+          	<Stroke>
+		    	    <CssParameter name="stroke">#FFFFFF</CssParameter>
+		    	    <CssParameter name="stroke-width">1</CssParameter>
+		        </Stroke>
+
+          </PolygonSymbolizer>
+
+          <TextSymbolizer>
+
+            <Label>
+              <ogc:PropertyName>state</ogc:PropertyName>
+            </Label>
+
+            <Font>
+              <CssParameter name="font-family">Arial</CssParameter>
+              <CssParameter name="font-size">10</CssParameter>
+              <CssParameter name="font-style">normal</CssParameter>
+              <CssParameter name="font-weight">bold</CssParameter>
+            </Font>
+
+            <LabelPlacement>
+              <PointPlacement>
+
+                <AnchorPoint>
+                  <AnchorPointX>0.5</AnchorPointX>
+                  <AnchorPointY>0.5</AnchorPointY>
+                </AnchorPoint>
+
+                <Displacement>
+                  <DisplacementX>0</DisplacementX>
+                  <DisplacementY>0</DisplacementY>
+                </Displacement>
+
+                <Rotation>0</Rotation>
+
+              </PointPlacement>
+            </LabelPlacement>
+
+            <Halo>
+              <Radius>0.9</Radius>
+              <Fill>
+              	<CssParameter name="fill">#ffffff</CssParameter>
+              </Fill>
+            </Halo>
+
+            <Fill>
+              <CssParameter name="fill">#800000</CssParameter>
+            </Fill>
+
+            <Priority>
+              <ogc:PropertyName>positive</ogc:PropertyName>
+            </Priority>
+
+          </TextSymbolizer>
+
+        </Rule>
+      </FeatureTypeStyle>
+    </UserStyle>
+  </NamedLayer>
+</StyledLayerDescriptor>
