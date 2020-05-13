@@ -1,0 +1,437 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Final Project</title>
+    <!-- Start Mobile Optimization -->
+    <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <!-- End Mobile Optimization -->
+
+    <!-- Start Javascript Reference -->
+		<script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+		<script src="http://unpkg.com/leaflet@1.3.1/dist/leaflet.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+		<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+		<!-- <script src="/Users/luisresh/Desktop/Code/FinalProject/src/js/L.TileLayer.BetterWMS.js"></script>-->
+    <!-- End Javascript Reference -->
+
+    <!-- Start CSS Stylesheets -->
+		<link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css">
+    <!-- End CSS Stylesheets -->	
+
+		<style>
+			#wrapper {
+				margin: 0 auto;
+				width: 100%;
+			}
+
+			#panel {
+			  float: left;
+				width: 100%;
+				height:50px;
+			  background-color: #175B81;
+			  color:white;
+			}
+
+			#map {
+				float: left;
+				width: 80%;
+				height:600px;
+			}
+
+			.sidebar {
+				float: left;
+				width: 20%;
+				height:600px;
+				background-color: white;
+				color: #175B81;
+			}
+
+			#footer {
+			  float: left;
+			  background-color: #175B81;
+			  color: white;
+				width: 100%;
+				height:25px;
+			}
+
+			.text-labels {
+				font-weight: bold;
+				color:#006400;
+				font-family: "Arial Black"
+				font-size: 20px ;
+				line-height:25px;
+				text-align:center;
+			}
+				
+			table, th, td {
+				margin:0px 5px;
+				/*border:solid 1px #333; */
+				padding:2px 4px;
+				font:10px Verdana;
+			}
+
+			th {
+				font-size:14px;
+				font-weight:bold;
+			}
+
+			td {
+				font-size:14px;
+				font-weight:normal;
+			}
+
+			tr {
+				background: white;
+			}
+				
+			/*tbody  tr:hover {
+					background: yellow;
+			}*/
+
+			table {
+				border-collapse: collapse;
+			}
+
+			.table a {
+				display:block;
+				text-decoration:none;
+			}
+
+			#f1 {
+				font-weight:bold;
+			}
+
+			.p2 {
+				font-size: 24px;
+				font-weight:bold;
+				position: relative;
+				top: 11px;
+				left: 20px;
+      }
+  
+			</style>
+		</head>
+	<body>
+
+		<div id="wrapper">
+			<div id="panel"><span class="p2">COVID-19 Tracker Map</span> </div>
+			<div id="map" class="leaflet-container leaflet-touch leaflet-fade-anim leaflet-grab leaflet-touch-drag leaflet-touch-zoom" tabindex="0" style="position: relative;">  
+				<div class="leaflet-pane leaflet-map-pane" style="transform: translate3d(-191px, 0px, 0px);">
+					<div class="leaflet-pane leaflet-tile-pane">
+						<div class="leaflet-layer " style="z-index: 4; opacity: 1;">
+							<div class="leaflet-tile-container leaflet-zoom-animated" style="z-index: 16; transform: translate3d(0px, 0px, 0px) scale(1);">
+								<img alt="" role="presentation" s>
+							</div>
+						</div>
+					</div>
+					<div class="leaflet-pane leaflet-shadow-pane"></div>
+					<div class="leaflet-pane leaflet-overlay-pane">
+						<svg pointer-events="none" class="leaflet-zoom-animated" width="167" height="720" viewBox="177 -60 167 720" style="transform: translate3d(177px, -60px, 0px);">
+							<g>
+								<path class="leaflet-interactive" stroke="blue" stroke-opacity="0.5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="blue" fill-opacity="0.8" fill-rule="evenodd" d="M0 0"></path>
+								<path class="leaflet-interactive" stroke="blue" stroke-opacity="0.5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="blue" fill-opacity="0.8" fill-rule="evenodd" d="M0 0"></path>
+								<path class="leaflet-interactive" stroke="blue" stroke-opacity="0.5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="blue" fill-opacity="0.8" fill-rule="evenodd" d="M0 0"></path>
+								<path class="leaflet-interactive" stroke="blue" stroke-opacity="0.5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="blue" fill-opacity="0.8" fill-rule="evenodd" d="M0 0"></path>
+								<path class="leaflet-interactive" stroke="blue" stroke-opacity="0.5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="blue" fill-opacity="0.8" fill-rule="evenodd" d="M0 0"></path>
+								<path class="leaflet-interactive" stroke="blue" stroke-opacity="0.5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="blue" fill-opacity="0.8" fill-rule="evenodd" d="M0 0"></path>
+								<path class="leaflet-interactive" stroke="blue" stroke-opacity="0.5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="blue" fill-opacity="0.8" fill-rule="evenodd" d="M0 0"></path>
+								<path class="leaflet-interactive" stroke="blue" stroke-opacity="0.5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="blue" fill-opacity="0.8" fill-rule="evenodd" d="M0 0"></path>
+								<path class="leaflet-interactive" stroke="blue" stroke-opacity="0.5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="blue" fill-opacity="0.8" fill-rule="evenodd" d="M178,289a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0 "></path>
+								<path class="leaflet-interactive" stroke="blue" stroke-opacity="0.5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="blue" fill-opacity="0.8" fill-rule="evenodd" d="M0 0"></path>
+								<path class="leaflet-interactive" stroke="blue" stroke-opacity="0.5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="blue" fill-opacity="0.8" fill-rule="evenodd" d="M0 0"></path>
+								<path class="leaflet-interactive" stroke="blue" stroke-opacity="0.5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="blue" fill-opacity="0.8" fill-rule="evenodd" d="M0 0"></path>
+								<path class="leaflet-interactive" stroke="blue" stroke-opacity="0.5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="blue" fill-opacity="0.8" fill-rule="evenodd" d="M0 0"></path>
+								<path class="leaflet-interactive" stroke="blue" stroke-opacity="0.5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="blue" fill-opacity="0.8" fill-rule="evenodd" d="M0 0"></path>
+								<path class="leaflet-interactive" stroke="blue" stroke-opacity="0.5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="blue" fill-opacity="0.8" fill-rule="evenodd" d="M0 0"></path>
+								<path class="leaflet-interactive" stroke="blue" stroke-opacity="0.5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="blue" fill-opacity="0.8" fill-rule="evenodd" d="M0 0"></path>
+								<path class="leaflet-interactive" stroke="blue" stroke-opacity="0.5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="blue" fill-opacity="0.8" fill-rule="evenodd" d="M0 0"></path>
+								<path class="leaflet-interactive" stroke="blue" stroke-opacity="0.5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="blue" fill-opacity="0.8" fill-rule="evenodd" d="M0 0"></path>
+								<path class="leaflet-interactive" stroke="blue" stroke-opacity="0.5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="blue" fill-opacity="0.8" fill-rule="evenodd" d="M0 0"></path>
+								<path class="leaflet-interactive" stroke="blue" stroke-opacity="0.5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="blue" fill-opacity="0.8" fill-rule="evenodd" d="M0 0"></path>
+								<path class="leaflet-interactive" stroke="blue" stroke-opacity="0.5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="blue" fill-opacity="0.8" fill-rule="evenodd" d="M0 0"></path>
+								<path class="leaflet-interactive" stroke="blue" stroke-opacity="0.5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="blue" fill-opacity="0.8" fill-rule="evenodd" d="M0 0"></path>
+								<path class="leaflet-interactive" stroke="blue" stroke-opacity="0.5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="blue" fill-opacity="0.8" fill-rule="evenodd" d="M347,306a6,6 0 1,0 12,0 a6,6 0 1,0 -12,0 "></path>
+								<path class="leaflet-interactive" stroke="blue" stroke-opacity="0.5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="blue" fill-opacity="0.8" fill-rule="evenodd" d="M0 0"></path>
+								<path class="leaflet-interactive" stroke="blue" stroke-opacity="0.5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="blue" fill-opacity="0.8" fill-rule="evenodd" d="M0 0"></path>
+								<path class="leaflet-interactive" stroke="blue" stroke-opacity="0.5" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="blue" fill-opacity="0.8" fill-rule="evenodd" d="M0 0"></path>
+							</g>
+						</svg>
+					</div>
+					<div class="leaflet-pane leaflet-marker-pane"></div>
+					<div class="leaflet-pane leaflet-tooltip-pane"></div>
+					<div class="leaflet-pane leaflet-popup-pane"></div>
+					<div class="leaflet-proxy leaflet-zoom-animated" style="transform: translate3d(929.5px, 1565px, 0px) scale(8);"></div>
+				</div>
+				<div class="leaflet-control-container">
+					<div class="leaflet-top leaflet-left">
+						<div class="leaflet-control-zoom leaflet-bar leaflet-control">
+							<a class="leaflet-control-zoom-in" href="#" title="Zoom in" role="button" aria-label="Zoom in">+</a>
+							<a class="leaflet-control-zoom-out" href="#" title="Zoom out" role="button" aria-label="Zoom out">-</a>
+						</div>
+					</div>
+					<div class="leaflet-top leaflet-right">
+						<div class="leaflet-control-layers leaflet-control" aria-haspopup="true">
+							<a class="leaflet-control-layers-toggle" href="#" title="Layers"></a>
+							<form class="leaflet-control-layers-list">
+								<div class="leaflet-control-layers-base">
+									<label>
+										<div>
+											<input type="radio" class="leaflet-control-layers-selector" name="leaflet-base-layers">
+												<span> Open Street Map</span>
+										</div>
+									</label>
+									<label>
+										<div>
+											<input type="radio" class="leaflet-control-layers-selector" name="leaflet-base-layers">
+											<span> Imagery</span>
+										</div>
+									</label>
+									<label>
+										<div>
+											<input type="radio" class="leaflet-control-layers-selector" name="leaflet-base-layers" checked="checked">
+											<span> Gray</span>
+										</div>
+									</label>
+									<label>
+										<div>
+											<input type="radio" class="leaflet-control-layers-selector" name="leaflet-base-layers">
+											<span> Blue Base</span>
+										</div>
+									</label>
+									<label>
+										<div>
+											<input type="radio" class="leaflet-control-layers-selector" name="leaflet-base-layers">
+											<span> OSM B&amp;W</span>
+										</div>
+									</label>
+								</div>
+								<div class="leaflet-control-layers-separator" style="display: none;"></div>
+								<div class="leaflet-control-layers-overlays"></div>
+							</form>
+						</div>
+					</div>
+					<div class="leaflet-bottom leaflet-left"></div>
+					<div class="leaflet-bottom leaflet-right">
+						<div class="leaflet-control-attribution leaflet-control"></div>
+					</div>
+				</div>
+			</div>
+
+			<div class="sidebar">
+				<p style="text-align:center; font-size: 24px; color:#175B81; font-weight:bold; ">COVID-19 MAPPING</p>
+				<p style="text-align:center; font-size: 14px; color:#175B81; font-weight:italic; ">Select Date, Statistic, and State</p> 
+
+				<div>
+					<p style="text-align:center;">
+						<select type="text "id='sql_input' onchange="load_coviddata(document.getElementById('sql_input').value,document.getElementById('sql_input2').value)">
+							<option value="2020-03-13">2020-03-13</option>
+							<option value="2020-03-20">2020-03-20</option>
+							<option value="2020-03-27">2020-03-27</option>
+							<option value="2020-04-03">2020-04-03</option>
+							<option value="2020-04-10">2020-04-10</option>
+							<option value="2020-04-17">2020-04-17</option>
+							<option value="2020-04-24" selected>2020-04-24</option>
+							<option value="2020-05-01">2020-05-01</option>
+							<option value="2020-05-08">2020-05-08</option>
+						</select>
+					</p>
+				</div>
+
+				<div>
+					<p style="text-align:center;">
+						<select type="text "id='sql_input2' onchange="load_coviddata(document.getElementById('sql_input').value,document.getElementById('sql_input2').value)">
+								<option value="red_menace_polygon_total_tests">Total Tests</option>
+								<option value="red_menace_polygon_positive" >Positive Tests</option>
+								<option value="red_menace_polygon_hospitalized">Hospitalized</option>
+								<option value="red_menace_polygon_deaths">Deaths</option>
+								<option value="red_menace_polygon_infect_rate">Infection Rate</option>
+								<option value="red_menace_polygon_hosp_rate" selected>Hospitalization Rate</option>
+								<option value="red_menace_polygon_death_rate">Death Rate</option>
+								<option value="green_menace_polygon_positive">Code Test</option>
+						</select>
+				</div>	 
+
+				<table style="width:90%">
+					<tbody>
+						<tr>
+							<th align="left">State:</th>
+							<td id="f1"></td>
+						</tr>
+						<tr>
+							<th align="left">Date:</th>
+							<td id="f2"></td>
+						</tr>
+						<tr>
+							<th align="left">Total Tests:</th>
+							<td id="f3"></td>
+						</tr>
+						<tr>
+							<th align="left">Positive Tests:</th>
+							<td id="f4"></td>
+						</tr>
+						<tr>
+							<th align="left">Hospitalized:</th>
+							<td id="f5"></td>
+						</tr>
+						<tr>
+							<th align="left">Deaths:</th>
+							<td id="f6"></td>
+						</tr>    
+						<tr>
+							<th align="left">Infection Rate:</th>
+							<td id="f7"></td>
+						</tr>
+						<tr>
+							<th align="left">Hospitalization Rate:</th>
+							<td id="f8"></td>
+						</tr>
+						<tr>
+							<th align="left">Death Rate:</th>
+							<td id="f9"></td>
+						</tr>
+					</tbody>
+				</table>
+
+			</div>
+
+			<div id="footer">  </div>
+			
+		</div>
+
+		<script>
+			// MAP DISPLAY SETUP
+			var map = L.map('map', {
+				maxZoom: 7,
+				minZoom: 3,
+				maxBounds: bounds,
+			}).setView([39.0, -98.26], 4);
+
+			// SETTING UP BOUNDS TO LIMIT MAP
+			var southWest = L.latLng(-89.98155760646617, -180),
+				northEast = L.latLng(89.99346179538875, 180);
+			var bounds = L.latLngBounds(southWest, northEast);
+			map.setMaxBounds(bounds);
+			map.on('drag', function() {
+				map.panInsideBounds(bounds, { animate: false });
+			});
+
+			// OPEN STREET BASEMAP 
+			var osm=new L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png').addTo(map);	
+			
+			// GET DATE FROM DEVICE
+			var today = new Date();
+			var dd = String(today.getDate()).padStart(2, '0');
+			var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+			var yyyy = today.getFullYear();
+			// param = yyyy + '-' + mm + '-' + dd + 'Z';
+			// current = '2020-03-15' + 'Z'
+
+			document.write(sql_input2.value)
+
+			var coviddata = null;
+
+			window.load_coviddata =function(date,stat) {
+				var query = "ymd_date = " + date + "Z";
+				var query2 = stat;
+
+				if (date == ''){
+					query = '1=1';
+				}
+
+				if (coviddata != null) {
+					map.removeLayer(coviddata);
+				}
+
+				coviddata = L.tileLayer.wms('http://localhost:8081/geoserver/ows?', {
+					layers : 'Testing:stateview1',
+					transparent : true,
+					format : 'image/png',
+					cql_filter : query,
+					styles: query2,
+					opacity : 1
+				}).addTo(map);
+			};
+
+			///////////////////
+			wfsURL = 'http://localhost:8081/geoserver/Testing/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=Testing%3Astateview1&maxFeatures=60&outputFormat=application%2Fjson&cql_filter=ymd_date=2020-03-20Z'
+
+			var myStyle = {
+					"color": "#ffffff",
+					"weight": 5,
+					"fillOpacity": 0,
+					"opacity": 0
+			};
+
+			window.load_coviddata("");	
+			// Get GeoJSON data and create features.
+			$.getJSON(wfsURL, function(data) {
+				
+				coviddata = L.geoJson(data, {
+					style: myStyle,
+						
+					onEachFeature: function (feature, layer) {
+							
+						layer.on('click', function (e) {
+			
+							// get coordinates from GeoJSON
+							var coords = e.target.feature.geometry.coordinates
+							//pass coords to function to create marker.(Yellow circle)
+							onMapClick(coords);
+							
+							var field1=document.getElementById('f1');
+							field1.innerHTML=e.target.feature.properties.state_name;
+							var field2=document.getElementById('f2');
+							field2.innerHTML=e.target.feature.properties.ymd_date;
+							var field3=document.getElementById('f3');
+							field3.innerHTML=e.target.feature.properties.total_tests;
+							var field4=document.getElementById('f4');
+							field4.innerHTML=e.target.feature.properties.positive;
+							var field5=document.getElementById('f5');
+							field5.innerHTML=e.target.feature.properties.hospitalized;
+							var field6=document.getElementById('f6');
+							field6.innerHTML=e.target.feature.properties.deaths;
+							var field7=document.getElementById('f7');
+							field7.innerHTML=e.target.feature.properties.infect_rate;
+							var field8=document.getElementById('f8');
+							field8.innerHTML=e.target.feature.properties.hosp_rate;
+							var field9=document.getElementById('f9');
+							field9.innerHTML=e.target.feature.properties.death_rate;
+
+						});
+					}
+				}).addTo(map);
+			});
+				
+			// click marker
+			var clickmark;
+
+			// When you click on a circle, it calls the onMapClick function and passes the layers coordinates.
+			// I grab the coords which are X,Y, and I need to flip them to latLng for a marker,  
+			function onMapClick(coords) {
+				console.log(coords);
+				var thecoords = coords.toString().split(',');
+				var lat = thecoords[1];
+				var lng = thecoords[0];
+				//if prior marker exists, remove it.
+				if (clickmark != undefined) {
+					map.removeLayer(clickmark);
+				}
+			};
+			// end of code for click marker.
+
+			//Add layer control
+			var baseMaps = {
+				"Open Street Map": osm
+			};
+
+			var overlayMaps = {
+				"COVID-19 Date": coviddata
+			};
+
+			L.control.layers(baseMaps, overlayMaps).addTo(map);
+
+		</script>
+	</body>
+</html>
