@@ -22,3 +22,10 @@ SELECT
 FROM covid19_stats AS covid
 ;
 */
+
+/*
+-- state_centroids
+SELECT DISTINCT state, state_name, ST_Centroid(geom)
+FROM public.covid19_states_view
+ORDER BY state	
+;
